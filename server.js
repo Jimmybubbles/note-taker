@@ -8,11 +8,33 @@ const fs = require('fs')
 let app = express();
 let PORT = process.env.PORT || 3000;
 
-//create parsers for the app.use
+//=============================================
+//parsing middleware for the application
+//=============================================
 
 app.use(express.urlencoded({ extended : true}));
 app.use(express.json());
 app.use(express.static("./public/"))
+
+//=============================================
+//paths for assets to populate on server routes
+//=============================================
+
+// path to send file to the homepage
+app.get("/"), (req,res) => {
+    res.sendFile(path.join(__dirname, "./public/index.html") )
+}
+
+// path is the default route for get
+app.get("*"), (req,res) => {
+    res.sendFile(path.join(__dirname, "./public/index.html"))
+}
+
+// path is to send files to the notes page.
+app.get('/notes'), (req,res) => {
+    res.sendFile(path.join(__dirname, "./public/notes.html"))
+}
+
 
 //=======================================
 //API routes
@@ -21,3 +43,14 @@ app.use(express.static("./public/"))
 
 // 
 
+
+
+
+
+//=======================================
+//Listening port
+//=======================================
+
+app.listen(PORT, () => {
+    console.log(`app listening on port ${PORT}`)
+})
