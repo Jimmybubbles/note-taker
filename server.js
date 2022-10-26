@@ -3,6 +3,8 @@ const express = require('express');
 const path = require("path");
 const fs = require('fs');
 const uuid = require('uuid');
+const { json } = require('stream/consumers');
+const data = JSON.parse(fs.readFileSync('develop/db/db.json', 'utf-8'));
 
 
 //initiate the express app
@@ -35,42 +37,54 @@ app.get("/notes", (req,res) => {
 });
 
 
+
+
+
 //=======================================
 //API routes
 //=======================================
 
-
-
 app.get('/api/notes', (req, res) => {
-    fs.readFile(path.join(__dirname, './db/db.json'), 'utf-8', (err, data) => {
-        if (err) throw err;
-            res.json(JSON.parse(data))
-        });
+    res.json(data)
 });
 
-app.post('/api/notes', (req,res) => {
-    fs.readFile(path.join(__dirname, "./db/db.json"), 'utf-8', (err, data) => {
-        let database = JSON.parse(data);
-        database.push({
-            id: uuid.v4(),
-            ...req.body,
-        });
 
-        fs.writeFile(
-            path.join(__dirname, ".db/db.json"), 
-            JSON.stringify(db, null, 2),
-            (err, data) => {
-                if (err) throw err;
-                res.json(db);    
-            }
-        );
+app.get('/api/notes/:id', (req, res) => {
+    res.json(data[Number(req.params.id)]);  
+})
+
+app.post('/api/notes', (req, res) => {
+    let newNote = req.body;
+    let key = (data.length).toString();
+    console.log(key);
+    newNote.id = key;
+    data.push(newNote);
+
+    fs.writeFileSync('./db/db.json', JSON.stringify(data), (err) => {;
+        if (err) throw (err);
     });
+
+    res.json(data)
 });
 
-// path is the default route for get
-app.get("*", (req,res) => {
-    res.sendFile(path.join(__dirname, "./public/index.html"));
+// delete 
+
+app.delete('/api/notes/:id', (req,res) => {
+    let noteID = req.params.id;
+    let newID = 0;
+    console.log(`Deleting note with ID ${noteID}`);
+    data = data.filter(currentNote => {
+        return currentNote.id != noteID;
+    });
+    for (currentNote of data) {
+        currentNote.id = newID.toString();
+        newID++;
+    }
+    fs.writeFileSync('./db/db.json', JSON.stringify(data));
+    res.json(data);
 });
+
+
 //=======================================
 //Listening port
 //=======================================
