@@ -1,14 +1,8 @@
 // install dependencies 
-const express = require('express')
-const path = require("path")
-const fs = require('fs')
-// need to have the full path name for the readFileSync
-const notes = JSON.parse(fs.readFileSync('develop/db/db.json', 'utf8'))
-
-//creates a random generated ID for each note entry
-const NewID = () => {
-    return 'id-' + Math.random().toString(36).substring(2, 16);
-}
+const express = require('express');
+const path = require("path");
+const fs = require('fs');
+const uuid = require('uuid');
 
 
 //initiate the express app
@@ -22,7 +16,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.urlencoded({ extended : true}));
 app.use(express.json());
-app.use(express.static("./public/"))
+app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
 
 //=============================================
 //paths for assets to populate on server routes
@@ -30,12 +24,12 @@ app.use(express.static("./public/"))
 
 // path to send file to the homepage
 app.get("/", (req,res) => {
-    res.sendFile(path.join(__dirname, "/public/index.html") )
+    res.sendFile(path.join(__dirname, "./public/index.html") )
 })
 
 // path is the default route for get
 app.get("*", (req,res) => {
-    res.sendFile(path.join(__dirname, "/public/index.html"));
+    res.sendFile(path.join(__dirname, "./public/index.html"));
 });
 
 // path to send files to the notes page.
@@ -51,30 +45,34 @@ app.get("/notes", (req,res) => {
 
 
 app.get('/api/notes', (req, res) => {
-    fs.readFile('./db/db.json', 'utf-8', (err, data) => {
+    fs.readFile(path.join(__dirname, './db/db.json'), 'utf-8', (err, data) => {
         if (err) throw err;
             res.json(JSON.parse(data))
         });
 });
 
 app.post('/api/notes', (req,res) => {
-    let newNote = req.body;
-    //need to make an id
-    newNote.id = NewID();
-    notes.push(newNote);
-    fs.writeFileSync("develop/db/db.json", JSON.stringify(notes));
-    res.json(notes);
-
+    fs.readFile(path.join(__dirname, "./db/db.json"), 'utf-8', (err, data) => {
+        let database = JSON.parse(data);
+        database.push({
+            id: uuid.v4(),
+            ...req.body,
+        });
+        fs.writeFile(
+            path.join(__dirname, ".db/db.json"), 
+            JSON.stringify(db, null, 2),
+            (err, data) => {
+                if (err) throw err;
+                res.json(db);    
+            }
+        );
+    });
 });
-
-
-
 
 
 //=======================================
 //Listening port
 //=======================================
 
-app.listen(PORT, () => {
-    console.log(`app listening on port ${PORT}`)
-})
+app.listen(PORT, () => 
+    console.log(`app listening on port ${PORT}`));
