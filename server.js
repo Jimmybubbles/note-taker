@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.urlencoded({ extended : true}));
 app.use(express.json());
-app.use('/assets', express.static(path.join(__dirname, 'public/assets')));
+app.use(express.static('public'))
 
 //=============================================
 //paths for assets to populate on server routes
@@ -27,10 +27,7 @@ app.get("/", (req,res) => {
     res.sendFile(path.join(__dirname, "./public/index.html") )
 })
 
-// path is the default route for get
-app.get("*", (req,res) => {
-    res.sendFile(path.join(__dirname, "./public/index.html"));
-});
+
 
 // path to send files to the notes page.
 app.get("/notes", (req,res) => {
@@ -58,6 +55,7 @@ app.post('/api/notes', (req,res) => {
             id: uuid.v4(),
             ...req.body,
         });
+
         fs.writeFile(
             path.join(__dirname, ".db/db.json"), 
             JSON.stringify(db, null, 2),
@@ -69,7 +67,10 @@ app.post('/api/notes', (req,res) => {
     });
 });
 
-
+// path is the default route for get
+app.get("*", (req,res) => {
+    res.sendFile(path.join(__dirname, "./public/index.html"));
+});
 //=======================================
 //Listening port
 //=======================================
