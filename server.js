@@ -2,7 +2,6 @@
 const express = require('express');
 const path = require("path");
 const fs = require('fs');
-const uuid = require('uuid');
 const { json } = require('stream/consumers');
 const data = JSON.parse(fs.readFileSync('develop/db/db.json', 'utf-8'));
 
@@ -60,14 +59,14 @@ app.post('/api/notes', (req, res) => {
     newNote.id = key;
     data.push(newNote);
 
-    fs.writeFileSync('./db/db.json', JSON.stringify(data), (err) => {;
+    fs.writeFileSync('develop/db/db.json', JSON.stringify(data), (err) => {;
         if (err) throw (err);
     });
 
     res.json(data)
 });
 
-// delete 
+// delete notes
 
 app.delete('/api/notes/:id', (req,res) => {
     let noteID = req.params.id;
@@ -80,7 +79,7 @@ app.delete('/api/notes/:id', (req,res) => {
         currentNote.id = newID.toString();
         newID++;
     }
-    fs.writeFileSync('./db/db.json', JSON.stringify(data));
+    fs.writeFileSync('develop/db/db.json', JSON.stringify(data));
     res.json(data);
 });
 
